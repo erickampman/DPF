@@ -52,6 +52,13 @@ struct FileBrowserOptions {
 
     // TODO file filter
 
+    // STAGEHAND LOCAL PATCH (macOS only, so far): choose a folder instead of a
+    // file when opening; and show only those with this extension (no dot;
+    // null: every one). A folder with an extension may be a package (a file in
+    // Finder): it's chosen as one too.
+    bool directories;
+    const char* extension;
+
    /**
       File browser button state.
       This allows to customize the behaviour of the file browse dialog buttons.
@@ -88,6 +95,8 @@ struct FileBrowserOptions {
         startDir(nullptr),
         title(nullptr),
         className(nullptr),
+        directories(false),
+        extension(nullptr),
         buttons() {}
 };
 
