@@ -267,6 +267,14 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
         puglSetViewHint(view, PUGL_CONTEXT_PROFILE, PUGL_OPENGL_COMPATIBILITY_PROFILE);
         puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 2);
        #endif
+       #if defined(DGL_OPENGL) && defined(DGL_SWAP_INTERVAL)
+        // DPF FORK LOCAL PATCH: DGL never set the swap interval, so the driver's default
+        // (vsync on) applied, and a swap could block the thread that swaps for up to a second
+        // under XWayland (Umpire's docs/ui-spike.md, finding 6). Define DGL_SWAP_INTERVAL
+        // (0 for vsync off) to choose it; left undefined, the driver's default applies as before.
+        // pugl applies it on X11 (GLX_EXT_swap_control) and Windows; its macOS backend ignores it.
+        puglSetViewHint(view, PUGL_SWAP_INTERVAL, DGL_SWAP_INTERVAL);
+       #endif
     }
     else
     {
