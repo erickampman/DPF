@@ -650,6 +650,29 @@ void Window::PrivateData::onPuglConfigure(const uint width, const uint height)
     createContextIfNeeded();
    #endif
 
+    // PMU LOCAL PATCH (not upstream — see /Users/erickampman/Dev-Audio/PolygraphModularUnified,
+    // gui_dgl.cpp's uiFocus()/uiScaleFactorChanged() comments and dgl/src/pugl-upstream/src/
+    // mac_gl.m/mac.m's own PMU LOCAL PATCH comments for the fuller cross-monitor-scale-bug
+    // investigation this is the actual final root cause of). `scaleFactor` (above, read by the
+    // public getScaleFactor()) is only ever set in this class's constructors — nothing anywhere
+    // else in this file (or its macOS pugl backend) ever reassigns it, confirmed by grepping the
+    // whole file for assignments. So once a window has been created, getScaleFactor() is frozen
+    // for its entire lifetime no matter what actually happens to the real backing scale — e.g.
+    // dragging the plugin window to a different-DPI display. PUGL_CONFIGURE (this function) DOES
+    // fire correctly for that case even on macOS (confirmed via live diagnostics: width/height
+    // update correctly), unlike the platform's actual dedicated scale-factor-changed event, which
+    // this vendored pugl's macOS backend never sends at all (see mac_gl.m's own patch for why).
+    // So: re-derive the true current value here, on every CONFIGURE, the same way the
+    // constructors originally obtained it (DGL_NAMESPACE::getScaleFactor(view), a live OS query
+    // — NOT cached), and explicitly fire onScaleFactorChanged() when it actually changed so any
+    // UI-level override (gui_dgl.cpp's uiScaleFactorChanged()) finally becomes reachable too.
+    const double newScaleFactor = DGL_NAMESPACE::getScaleFactor(view);
+    if (newScaleFactor != scaleFactor)
+    {
+        scaleFactor = newScaleFactor;
+        self->onScaleFactorChanged(newScaleFactor);
+    }
+
     if (autoScaling)
     {
         const double scaleHorizontal = width  / static_cast<double>(minWidth);
