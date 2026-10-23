@@ -68,6 +68,12 @@ The fork's own ("DPF FORK LOCAL PATCH"):
   dpf__add_dgl_opengl(...)
   target_compile_definitions(dgl-opengl PUBLIC DGL_SWAP_INTERVAL=0)
   ```
+- `cmake/DPF-plugin.cmake`, `dpf__link_file_browser_frameworks()`: on
+  macOS, links the UniformTypeIdentifiers framework wherever
+  `DGL_USE_FILE_BROWSER` is defined, since StageHand's file browser patch
+  above uses UTType. Without it, a consumer that turns the file browser on
+  (IFSynth, ModicumFM) fails to link on macOS. StageHand's own
+  `-framework UniformTypeIdentifiers` line is now redundant but harmless.
 
 Still to come: the plugins' patches, including the CLAP wrapper's UMP
 handling (Umpire's `docs/plugins-roadmap.md`).

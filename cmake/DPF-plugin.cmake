@@ -191,6 +191,7 @@ function(dpf_add_plugin NAME)
 
   if(_dpf_plugin_USE_FILE_BROWSER)
     target_compile_definitions("${NAME}" PUBLIC "DGL_USE_FILE_BROWSER")
+    dpf__link_file_browser_frameworks("${NAME}")
   endif()
 
   if(_dpf_plugin_USE_WEB_VIEW)
@@ -372,6 +373,7 @@ function(dpf_add_executable NAME)
 
   if(_dpf_plugin_USE_FILE_BROWSER)
     target_compile_definitions("${NAME}" PUBLIC "DGL_USE_FILE_BROWSER")
+    dpf__link_file_browser_frameworks("${NAME}")
     if(EMSCRIPTEN)
       target_link_options("${NAME}" PRIVATE -sEXPORTED_RUNTIME_METHODS=FS,cwrap)
     endif()
@@ -907,10 +909,12 @@ function(dpf__add_dgl_cairo SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
 
   if(USE_FILE_BROWSER)
     target_compile_definitions(dgl-cairo PUBLIC "DGL_USE_FILE_BROWSER")
+    dpf__link_file_browser_frameworks(dgl-cairo)
   endif()
 
   if(USE_WEB_VIEW)
     target_compile_definitions(dgl-cairo PUBLIC "DGL_USE_FILE_BROWSER")
+    dpf__link_file_browser_frameworks(dgl-cairo)
     if(APPLE)
       find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
       target_link_libraries(dgl-cairo PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
@@ -982,6 +986,7 @@ function(dpf__add_dgl_external USE_FILE_BROWSER USE_WEB_VIEW)
 
   if(USE_FILE_BROWSER)
     target_compile_definitions(dgl-external PUBLIC "DGL_USE_FILE_BROWSER")
+    dpf__link_file_browser_frameworks(dgl-external)
   endif()
 
   if(USE_WEB_VIEW)
@@ -1069,6 +1074,7 @@ function(dpf__add_dgl_gles2 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
 
   if(USE_FILE_BROWSER)
     target_compile_definitions(dgl-gles2 PUBLIC "DGL_USE_FILE_BROWSER")
+    dpf__link_file_browser_frameworks(dgl-gles2)
   endif()
 
   if(USE_WEB_VIEW)
@@ -1168,6 +1174,7 @@ function(dpf__add_dgl_gles3 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
 
   if(USE_FILE_BROWSER)
     target_compile_definitions(dgl-gles3 PUBLIC "DGL_USE_FILE_BROWSER")
+    dpf__link_file_browser_frameworks(dgl-gles3)
   endif()
 
   if(USE_WEB_VIEW)
@@ -1267,6 +1274,7 @@ function(dpf__add_dgl_opengl SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
 
   if(USE_FILE_BROWSER)
     target_compile_definitions(dgl-opengl PUBLIC "DGL_USE_FILE_BROWSER")
+    dpf__link_file_browser_frameworks(dgl-opengl)
   endif()
 
   if(USE_WEB_VIEW)
@@ -1363,6 +1371,7 @@ function(dpf__add_dgl_opengl3 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
 
   if(USE_FILE_BROWSER)
     target_compile_definitions(dgl-opengl3 PUBLIC "DGL_USE_FILE_BROWSER")
+    dpf__link_file_browser_frameworks(dgl-opengl3)
   endif()
 
   if(USE_WEB_VIEW)
@@ -1449,6 +1458,7 @@ function(dpf__add_dgl_vulkan SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
 
   if(USE_FILE_BROWSER)
     target_compile_definitions(dgl-vulkan PUBLIC "DGL_USE_FILE_BROWSER")
+    dpf__link_file_browser_frameworks(dgl-vulkan)
   endif()
 
   if(USE_WEB_VIEW)
@@ -1505,6 +1515,15 @@ endfunction()
 #
 # Find system libraries required by DGL and add them as an interface target.
 #
+# DPF FORK LOCAL PATCH: StageHand's macOS file browser patch filters by extension through
+# UTType, which lives in the UniformTypeIdentifiers framework. Link it wherever the file
+# browser is compiled in, so a consumer doesn't have to (StageHand linked it itself).
+function(dpf__link_file_browser_frameworks TARGET)
+  if(APPLE)
+    target_link_libraries("${TARGET}" PRIVATE "-framework UniformTypeIdentifiers")
+  endif()
+endfunction()
+
 function(dpf__add_dgl_system_libs)
   if(TARGET dgl-system-libs)
     return()
