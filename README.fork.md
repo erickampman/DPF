@@ -1,24 +1,25 @@
-# The private DPF fork
+# Unlikelyware's DPF fork
 
-DPF (DISTRHO Plugin Framework) with the local patches that StageHand, Umpire
-and the plugins need, in one place. Upstream's README.md, LICENSE (ISC) and
-LICENSING.md apply. Why the fork exists, and how consumers use it: Umpire's
-`docs/decisions.md`, "DPF fork".
+DPF (DISTRHO Plugin Framework) with the local patches that the Unlikelyware
+apps and plugins (StageHand, NoteGran and the synths) need, in one place.
+Upstream's README.md, LICENSE (ISC) and LICENSING.md apply. The fork exists so
+those patches live in one repo that every project pins, rather than in a
+vendored copy per project.
 
-- **This repo:** `erickampman/DPF` (private), cloned at `~/dev/dev-common/DPF`
-  on the Linux PC. Remote `upstream` is `DISTRHO/DPF`.
+- **This repo:** `erickampman/DPF`. Its `upstream` remote is `DISTRHO/DPF`.
 - **pugl** (`dgl/src/pugl-upstream`) is a submodule pointing at a second
-  private fork, `erickampman/pugl` (`~/dev/dev-common/pugl`; remote
-  `upstream` is `DISTRHO/pugl`), because PMU's macOS patches are in pugl.
-  Push the pugl fork before a DPF commit that pins it.
-- **Consumers** mount this repo as a submodule (StageHand and Umpire at
-  `external/dpf`), clone with `--recurse-submodules`, and set
-  `git config push.recurseSubmodules check`.
+  fork, `erickampman/pugl` (its `upstream` is `DISTRHO/pugl`), because the
+  PMU macOS patches below are in pugl. Push the pugl fork before a DPF commit
+  that pins it.
+- **Consumers** mount this repo as a submodule (StageHand and NoteGran at
+  `external/dpf`, the synths at `dpf`), clone with `--recurse-submodules`, and
+  set `git config push.recurseSubmodules check`.
 
 ## Base
 
 Made 2026-10-14 from StageHand's vendored copy (`external/dpf`, itself copied
-from PolygraphModularUnified's `dgl-ui/dpf` at PMU `ed3761e`). That copy is,
+from PolygraphModular's `dgl-ui/dpf` at PMU `ed3761e`; PolygraphModular, PMU
+for short, isn't public). That copy is,
 apart from the patches below, exactly:
 
 - DPF `4238e1c7` (upstream `main`, 2025-10-23, "Merge branch 'develop'");
@@ -59,9 +60,8 @@ The fork's own ("DPF FORK LOCAL PATCH"):
 - `dgl/src/pugl.cpp`, `puglSetMatchingBackendForCurrentBuild()`: with
   `DGL_SWAP_INTERVAL` defined, sets pugl's `PUGL_SWAP_INTERVAL` hint to it
   when DGL makes a view (OpenGL only). `0` turns vsync off. Undefined, the
-  driver's default applies, as upstream. Umpire defines it as `0` (its
-  `docs/ui-spike.md`, finding 6: a swap blocked for about a second under
-  XWayland). pugl applies the hint on X11 (`GLX_EXT_swap_control`) and
+  driver's default applies, as upstream. Set it to `0` where a swap blocks
+  (seen under XWayland, for about a second at a time). pugl applies the hint on X11 (`GLX_EXT_swap_control`) and
   Windows; its macOS backend ignores it. Define it on the DGL library target,
   since `pugl.cpp` is compiled there:
   ```cmake
@@ -75,12 +75,13 @@ The fork's own ("DPF FORK LOCAL PATCH"):
   (IFSynth, ModicumFM) fails to link on macOS. StageHand's own
   `-framework UniformTypeIdentifiers` line is now redundant but harmless.
 
-Still to come: the plugins' patches, including the CLAP wrapper's UMP
-handling (Umpire's `docs/plugins-roadmap.md`).
+No patches to DPF's plugin wrappers: no consumer uses them. The synths and
+NoteGran have their own CLAP entry points (which offer the MIDI 2 dialect)
+and take only DGL from DPF.
 
 ## Each consumer's DGL_NAMESPACE
 
-Every consumer sets its own (`StageHandDGL`, `UmpireDGL`, `StruckSynthDGL`,
+Every consumer sets its own (`StageHandDGL`, `NoteGranDGL`, `StruckSynthDGL`,
 ...). On macOS pugl names its Objective-C classes after it, and two binaries
 in one process with the same name clash.
 
