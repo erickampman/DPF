@@ -68,6 +68,16 @@ The fork's own ("DPF FORK LOCAL PATCH"):
   dpf__add_dgl_opengl(...)
   target_compile_definitions(dgl-opengl PUBLIC DGL_SWAP_INTERVAL=0)
   ```
+- pugl `src/mac.m`, `include/pugl/pugl.h` (in the pugl fork; "UNLIKELYWARE
+  LOCAL PATCH"), and `dgl/Base.hpp`: a two-finger pinch on a Mac trackpad
+  (`magnifyWithEvent:`, which pugl dropped) is passed on as a scroll event
+  flagged `PUGL_IS_MAGNIFY` (DGL's `kFlagMagnify`), with Command added to its
+  modifiers, so an app that zooms on Command-wheel zooms on a pinch without
+  knowing the flag. Its `dy` is in Command-wheel notches of a 1.25x zoom:
+  zooming by `pow(1.25, dy)` follows the fingers. Made for Umpire's zoom
+  (2026-11-20). An app that zooms by a fixed step per event, whatever its
+  delta, zooms fast on a pinch, as it already does on a trackpad's
+  Command-swipe; StageHand's sequence editor does, and should use the delta.
 - `cmake/DPF-plugin.cmake`, `dpf__link_file_browser_frameworks()`: on
   macOS, links the UniformTypeIdentifiers framework wherever
   `DGL_USE_FILE_BROWSER` is defined, since StageHand's file browser patch

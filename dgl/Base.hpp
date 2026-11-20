@@ -188,6 +188,8 @@ enum Key {
 enum EventFlag {
     kFlagSendEvent = 1, ///< Event is synthetic
     kFlagIsHint    = 2, ///< Event is a hint (not direct user input)
+    // DPF FORK LOCAL PATCH: pugl's PUGL_IS_MAGNIFY (the pugl fork, src/mac.m).
+    kFlagMagnify   = 4, ///< Scroll event is a trackpad pinch: a Command-scroll whose delta is in zoom notches (macOS)
 };
 
 /**
